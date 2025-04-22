@@ -1,62 +1,75 @@
-import type { OneOf } from '../types/OneOf.ts';
-
-export type ArgOptions = OneOf<[Flag, Argument, Positional]>;
-
-export type ArgBaseOptions = {
-	description?: string;
-	required?: boolean;
-	conflicts?: string[];
-};
-
-export type Flag = ArgBaseOptions & {
-	short?: string;
-	long?: string;
-	flag: true;
-};
-
-export type Argument = ArgBaseOptions & {
-	short?: string;
-	long?: string;
-	default?: string;
-	multiple?: boolean;
-	validate?: Validator;
-};
-
-export type Positional = ArgBaseOptions & {
-	positional: true;
-	default?: string;
-	multiple?: boolean;
-	validate?: Validator;
-};
-
-export type Validator = (value: string) => boolean;
-
-export type ArgType = 'flag' | 'argument' | 'positional';
-
-export type Arg = {
+export type RawArgument = {
 	name: string;
-	description?: string;
-	required: boolean;
-	type: ArgType;
+	description: string;
 	short?: string;
-	long: string;
-	default?: string;
-	conflicts: string[];
+	required: boolean;
+	flag: boolean;
 	multiple: boolean;
-	validate: Validator;
+	positional: boolean;
 };
 
-export function argument(name: string, options: ArgOptions): Arg {
-	return {
-		name,
-		description: options.description,
-		required: options.required ?? false,
-		type: options.flag ? 'flag' : 'argument',
-		short: options.short,
-		long: options.long ?? name,
-		default: options.default,
-		conflicts: options.conflicts ?? [],
-		multiple: options.multiple ?? false,
-		validate: options.validate ?? (() => true),
-	};
+export class Argument {
+	protected _name: string;
+	protected _description: string = '';
+	protected _short: string | undefined = undefined;
+	protected _required: boolean = false;
+	protected _flag: boolean = false;
+	protected _multiple: boolean = false;
+	protected _positional: boolean = false;
+
+	public constructor(name: string) {
+		this._name = name;
+	}
+
+	public description(description: string): Argument {
+		this._description = description;
+
+		return this;
+	}
+
+	public short(short: string): Argument {
+		this._short = short;
+
+		return this;
+	}
+
+	public required(): Argument {
+		this._required = true;
+
+		return this;
+	}
+
+	public flag(): Argument {
+		this._flag = true;
+
+		return this;
+	}
+
+	public multiple(): Argument {
+		this._multiple = true;
+
+		return this;
+	}
+
+	public positional(): Argument {
+		this._positional = true;
+
+		return this;
+	}
+
+	public raw(): RawArgument {
+		return {
+			name: this._name,
+			description: this._description,
+			short: this._short,
+			required: this._required,
+			flag: this._flag,
+			multiple: this._multiple,
+			positional: this._positional,
+		};
+	}
+}
+
+export function argument(name: string): Argument {
+	return new Argument(name);
 }

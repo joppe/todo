@@ -1,89 +1,42 @@
-import { type Arg, type ArgOptions, argument } from './argument.ts';
+import type { Argument, RawArgument } from './argument.ts';
 
-export type CommandOptions = {
-	description?: string;
-	subcommandRequired?: boolean;
-};
-
-export type CommandDebug = {
+export type RawCommand = {
 	name: string;
-	description: string | undefined;
-	args: Omit<Arg, 'validate'>[];
-	subcommands: CommandDebug[];
+	description: string;
+	args: Array<RawArgument>;
 };
 
-export type Command = {
-	name: string;
-	description?: string;
-	version?: string;
-	about?: string;
-	subcommandRequired: boolean;
-	args: Arg[];
-	subcommands: Command[];
-	arg(name: string, options: ArgOptions): Command;
-	subcommand(
-		name: string,
-		options: CommandOptions,
-		cb?: (cmd: Command) => void,
-	): Command;
-	debug(): CommandDebug;
-};
+export class Command {
+	protected _name: string;
+	protected _description: string = '';
+	protected _args: Argument[];
 
-export function command(name: string, options: CommandOptions): Command {
-	const args: Arg[] = [];
-	const subcommands: Command[] = [];
+	public constructor(name: string) {
+		this._name = name;
+		this._args = [];
+	}
 
-	return {
-		get name(): string {
-			return name;
-		},
+	public description(description: string): Command {
+		this._description = description;
 
-		get description(): string | undefined {
-			return options.description;
-		},
+		return this;
+	}
 
-		get subcommandRequired(): boolean {
-			return options.subcommandRequired === true;
-		},
+	public arg(arg: Argument): Command {
+		this._args.push(arg);
 
-		get args(): Arg[] {
-			return args;
-		},
+		return this;
+	}
 
-		get subcommands(): Command[] {
-			return subcommands;
-		},
+	public raw(): RawCommand {
+		return {
+			name: this._name,
+			description: this._description,
+			args: this._args.map((arg) => arg.raw()),
+		};
+	}
+}
 
-		debug(): CommandDebug {
-			return {
-				name,
-				description: options.description,
-				args: args.map((arg) => {
-					const { validate: _, ...rest } = arg;
-
-					return rest;
-				}),
-				subcommands: subcommands.map((subcommand) => subcommand.debug()),
-			};
-		},
-
-		arg(name: string, options: ArgOptions): Command {
-			args.push(argument(name, options));
-
-			return this;
-		},
-
-		subcommand(
-			name: string,
-			options: CommandOptions,
-			cb?: (cmd: Command) => void,
-		): Command {
-			const cmd = command(name, options);
-
-			cb?.(cmd);
-			subcommands.push(cmd);
-
-			return this;
-		},
-	};
+export function command(name: string): Command {
+	return new Command(name);
 }
