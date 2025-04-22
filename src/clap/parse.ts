@@ -7,6 +7,11 @@ type InputArg = {
 	type: InputArgType;
 };
 
+type ResultValue = string | string[] | boolean;
+type Result = {
+	[key: string]: ResultValue | Result;
+};
+
 function inputArgs(args: string[]): InputArg[] {
 	return args.reduce((acc: InputArg[], arg: string): InputArg[] => {
 		if (arg.startsWith('--')) {
@@ -49,19 +54,37 @@ function findArg(
 	});
 }
 
-function parseCommand(
+function findSubcommand(
 	command: RawCommand,
-	inputArgs: InputArg[],
-): Record<string, any> {
+	inputArg: InputArg,
+): RawCommand | undefined {
+	return command.commands.find((arg) => arg.name === inputArg.value);
+}
+
+function parseCommand(command: RawCommand, inputArgs: InputArg[]): Result {
 	const positionalArgs = command.args.filter((arg) => arg.positional);
 	let positionalIndex = 0;
 
-	const output: Record<string, any> = {};
+	const output: Result = {};
 
 	for (let index = 0; index < inputArgs.length; index++) {
 		const inputArg = inputArgs[index] as InputArg;
 
 		if (inputArg.type === 'anonymous') {
+			const subcommand = findSubcommand(command, inputArg);
+
+			if (subcommand) {
+				const subcommandArgs = parseCommand(
+					subcommand,
+					inputArgs.slice(index + 1),
+				);
+
+				output[subcommand.name] = subcommandArgs;
+				index += inputArgs.length - 1 - index;
+
+				continue;
+			}
+
 			const positionalArg = positionalArgs[positionalIndex];
 
 			if (!positionalArg) {
@@ -73,7 +96,7 @@ function parseCommand(
 					output[positionalArg.name] = [];
 				}
 
-				output[positionalArg.name].push(inputArg.value);
+				(output[positionalArg.name] as string[]).push(inputArg.value);
 
 				const rest = inputArgs.length - 1 - index;
 
@@ -109,12 +132,9 @@ function parseCommand(
 	return output;
 }
 
-export function parse(
-	command: Command,
-	args: string[],
-): Record<string, string | string[] | boolean> {
+export function parse<T extends Result>(command: Command, args: string[]): T {
 	const raw = command.raw();
 	const output = parseCommand(raw, inputArgs(args));
 
-	return output;
+	return output as T;
 }

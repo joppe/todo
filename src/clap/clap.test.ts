@@ -111,4 +111,101 @@ describe('clap', () => {
 
 		expect(args.port).toEqual('8080');
 	});
+
+	test('subcommand', () => {
+		type Todo = {
+			add: {
+				title: string;
+				priority?: string;
+			};
+		};
+
+		const todo = clap
+			.command('todo')
+			.subcommand(
+				clap
+					.command('add')
+					.description('add a new todo')
+					.arg(
+						clap
+							.argument('title')
+							.description('title of the todo')
+							.required()
+							.positional(),
+					)
+					.arg(
+						clap
+							.argument('priority')
+							.description('priority of the todo')
+							.short('p'),
+					),
+			);
+
+		const args = clap.parse<Todo>(todo, ['add', '-p', '1', 'buy milk']);
+
+		expect(args.add.title).toEqual('buy milk');
+		expect(args.add.priority).toEqual('1');
+	});
+
+	test('multiple subcommands', () => {
+		type Todo = {
+			add: {
+				title: string;
+				priority?: string;
+			};
+			list: {
+				sort?: string;
+				direction?: string;
+				filterDone?: true;
+			};
+		};
+
+		const todo = clap
+			.command('todo')
+			.subcommand(
+				clap
+					.command('add')
+					.description('add a new todo')
+					.arg(
+						clap
+							.argument('title')
+							.description('title of the todo')
+							.required()
+							.positional(),
+					)
+					.arg(
+						clap
+							.argument('priority')
+							.description('priority of the todo')
+							.short('p'),
+					),
+			)
+			.subcommand(
+				clap
+					.command('list')
+					.description('list all todos')
+					.arg(clap.argument('sort').short('s').description('sort by field'))
+					.arg(clap.argument('direction').short('d').description('sort order'))
+					.arg(
+						clap
+							.argument('filterDone')
+							.short('f')
+							.description('filter done')
+							.flag(),
+					),
+			);
+
+		const args = clap.parse<Todo>(todo, [
+			'list',
+			'-s',
+			'title',
+			'--direction',
+			'asc',
+			'-f',
+		]);
+
+		expect(args.list.sort).toEqual('title');
+		expect(args.list.direction).toEqual('asc');
+		expect(args.list.filterDone).toEqual(true);
+	});
 });
