@@ -1,7 +1,3 @@
-# Clap
+# Todo
 
-Command Line Argument Parser
-
-## Introduction
-
-https://betterdev.blog/command-line-arguments-anatomy-explained/
+Overly complex way of managing todos.

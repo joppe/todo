@@ -1,75 +1,75 @@
 export type RawArgument = {
-	name: string;
-	description: string;
-	short?: string;
-	required: boolean;
-	flag: boolean;
-	multiple: boolean;
-	positional: boolean;
+  name: string;
+  description: string;
+  short?: string;
+  required: boolean;
+  flag: boolean;
+  multiple: boolean;
+  positional: boolean;
 };
 
 export class Argument {
-	protected _name: string;
-	protected _description: string = '';
-	protected _short: string | undefined = undefined;
-	protected _required: boolean = false;
-	protected _flag: boolean = false;
-	protected _multiple: boolean = false;
-	protected _positional: boolean = false;
+  protected _name: string;
+  protected _description: string = "";
+  protected _short: string | undefined = undefined;
+  protected _required: boolean = false;
+  protected _flag: boolean = false;
+  protected _multiple: boolean = false;
+  protected _positional: boolean = false;
 
-	public constructor(name: string) {
-		this._name = name;
-	}
+  public constructor(name: string) {
+    this._name = name;
+  }
 
-	public description(description: string): Argument {
-		this._description = description;
+  public description(description: string): Argument {
+    this._description = description;
 
-		return this;
-	}
+    return this;
+  }
 
-	public short(short: string): Argument {
-		this._short = short;
+  public short(short: string): Argument {
+    this._short = short;
 
-		return this;
-	}
+    return this;
+  }
 
-	public required(): Argument {
-		this._required = true;
+  public required(): Argument {
+    this._required = true;
 
-		return this;
-	}
+    return this;
+  }
 
-	public flag(): Argument {
-		this._flag = true;
+  public flag(): Argument {
+    this._flag = true;
 
-		return this;
-	}
+    return this;
+  }
 
-	public multiple(): Argument {
-		this._multiple = true;
+  public multiple(): Argument {
+    this._multiple = true;
 
-		return this;
-	}
+    return this;
+  }
 
-	public positional(): Argument {
-		this._positional = true;
+  public positional(): Argument {
+    this._positional = true;
 
-		return this;
-	}
+    return this;
+  }
 
-	public raw(): RawArgument {
-		return {
-			name: this._name,
-			description: this._description,
-			short: this._short,
-			required: this._required,
-			flag: this._flag,
-			multiple: this._multiple,
-			positional: this._positional,
-		};
-	}
+  public raw(): RawArgument {
+    return {
+      name: this._name,
+      description: this._description,
+      short: this._short,
+      required: this._required,
+      flag: this._flag,
+      multiple: this._multiple,
+      positional: this._positional,
+    };
+  }
 }
 
 export function argument(name: string): Argument {
-	return new Argument(name);
+  return new Argument(name);
 }
