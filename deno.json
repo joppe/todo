@@ -1,10 +1,16 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-read=data/todos.json --allow-write=data/todos.json index.ts"
+    "dev": "deno run --watch --allow-read=data/todos.json --allow-write=data/todos.json src/cli.ts",
+    "start": "deno run --allow-read=data/todos.json --allow-write=data/todos.json src/cli.ts",
+    "build": "deno compile --allow-read=/home/joppe/todo/todos.json --allow-write=/home/joppe/todo/todos.json --output=./bin/todo src/cli.ts"
   },
   "imports": {
+    "@clap/": "./src/clap/",
+    "@gateways/": "./src/gateways/",
     "@std/assert": "jsr:@std/assert@^1.0.12",
     "@std/path": "jsr:@std/path@^1.0.8",
-    "@std/uuid": "jsr:@std/uuid@^1.0.6"
+    "@std/uuid": "jsr:@std/uuid@^1.0.6",
+    "@todo/": "./src/modules/todo/",
+    "@utils/": "./src/utils/"
   }
 }

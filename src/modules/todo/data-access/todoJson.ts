@@ -1,8 +1,10 @@
-import * as uuid from "jsr:@std/uuid";
+import type { File } from "../../../gateways/file.ts";
 import type { Todo } from "../entity/Todo.ts";
+import type { TodoRepository } from "./TodoRepository.ts";
 
 export type MakeTodoJson = {
-  file: string;
+  file: File;
+  generateId: () => string;
 };
 
 export type SerializedTodo = Omit<Todo, "created" | "updated" | "deadline"> & {
@@ -11,18 +13,13 @@ export type SerializedTodo = Omit<Todo, "created" | "updated" | "deadline"> & {
   deadline: string | null;
 };
 
-export type TodoJson = {
-  insert: (data: Omit<Todo, "id" | "created" | "updated">) => Promise<Todo>;
-  update: (data: Todo) => Promise<Todo>;
-  remove: (id: string) => Promise<void>;
-  find: (id: string) => Promise<Todo>;
-};
-
-export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
+export function makeTodoJson({
+  file,
+  generateId,
+}: MakeTodoJson): TodoRepository {
   async function read(): Promise<Todo[]> {
-    const data = await Deno.readFile(file);
-    const decoded = new TextDecoder().decode(data);
-    const json = JSON.parse(decoded);
+    const data = await file.read();
+    const json = JSON.parse(data);
 
     if (!Array.isArray(json)) {
       throw new Error("Invalid JSON format");
@@ -43,21 +40,25 @@ export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
       created: item.created.toISOString(),
       updated: item.updated.toISOString(),
     }));
-    const json = JSON.stringify(serializedData, null, 2);
-    const data = new TextEncoder().encode(json);
+    const data = JSON.stringify(serializedData, null, 2);
 
-    await Deno.writeFile(file, data);
+    await file.write(data);
   }
 
-  async function insert(
-    data: Omit<Todo, "id" | "created" | "updated">,
-  ): Promise<Todo> {
+  function findIndex(id: string, todos: Todo[]): number {
+    const index = todos.findIndex((todo) => todo.id === id);
+
+    if (index === -1) {
+      throw new Error("Todo not found");
+    }
+    return index;
+  }
+
+  async function insert(data: Omit<Todo, "id">): Promise<Todo> {
     const todos = await read();
     const newTodo = {
       ...data,
-      id: uuid.v1.generate(),
-      created: new Date(),
-      updated: new Date(),
+      id: generateId(),
     };
 
     todos.push(newTodo);
@@ -66,13 +67,12 @@ export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
     return newTodo;
   }
 
-  async function update(data: Todo): Promise<Todo> {
+  async function update(
+    id: string,
+    data: Pick<Todo, "title" | "description" | "deadline">,
+  ): Promise<Todo> {
     const todos = await read();
-    const index = todos.findIndex((todo) => todo.id === data.id);
-
-    if (index === -1) {
-      throw new Error("Todo not found");
-    }
+    const index = findIndex(id, todos);
 
     const todo = {
       ...todos[index],
@@ -88,11 +88,7 @@ export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
 
   async function remove(id: string): Promise<void> {
     const todos = await read();
-    const index = todos.findIndex((todo) => todo.id === id);
-
-    if (index === -1) {
-      throw new Error("Todo not found");
-    }
+    const index = findIndex(id, todos);
 
     todos.splice(index, 1);
     await write(todos);
@@ -100,13 +96,29 @@ export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
 
   async function find(id: string): Promise<Todo> {
     const todos = await read();
-    const index = todos.findIndex((todo) => todo.id === id);
-
-    if (index === -1) {
-      throw new Error("Todo not found");
-    }
+    const index = findIndex(id, todos);
 
     return todos[index] as Todo;
+  }
+
+  async function findAll(): Promise<Todo[]> {
+    return await read();
+  }
+
+  async function toggle(id: string): Promise<Todo> {
+    const todos = await read();
+    const index = findIndex(id, todos);
+
+    const todo = {
+      ...todos[index],
+      done: !todos[index].done,
+      updated: new Date(),
+    };
+
+    todos[index] = todo;
+    await write(todos);
+
+    return todo;
   }
 
   return {
@@ -114,5 +126,7 @@ export function makeTodoJson({ file }: MakeTodoJson): TodoJson {
     update,
     remove,
     find,
+    findAll,
+    toggle,
   };
 }
