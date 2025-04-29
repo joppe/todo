@@ -1,10 +1,12 @@
-import type { Argument, RawArgument } from "./argument.ts";
+import type { Argument, ArgumentData } from "./argument.ts";
+import { EXPORT_PROPERTY } from "@clap/config.ts";
 
-export type RawCommand = {
+export type CommandData = {
   name: string;
   description: string;
-  args: Array<RawArgument>;
-  commands: Array<RawCommand>;
+  args: Array<ArgumentData>;
+  commands: Array<CommandData>;
+  requireSubcommand: boolean;
 };
 
 export class Command {
@@ -12,6 +14,17 @@ export class Command {
   protected _description: string = "";
   protected _args: Argument[];
   protected _subcommands: Command[];
+  protected _requireSubcommand: boolean = false;
+
+  get [EXPORT_PROPERTY](): CommandData {
+    return {
+      name: this._name,
+      description: this._description,
+      args: this._args.map((arg) => arg[EXPORT_PROPERTY]),
+      commands: this._subcommands.map((cmd) => cmd[EXPORT_PROPERTY]),
+      requireSubcommand: this._requireSubcommand,
+    };
+  }
 
   public constructor(name: string) {
     this._name = name;
@@ -37,13 +50,10 @@ export class Command {
     return this;
   }
 
-  public raw(): RawCommand {
-    return {
-      name: this._name,
-      description: this._description,
-      args: this._args.map((arg) => arg.raw()),
-      commands: this._subcommands.map((cmd) => cmd.raw()),
-    };
+  public requireSubcommand(): Command {
+    this._requireSubcommand = true;
+
+    return this;
   }
 }
 

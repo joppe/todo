@@ -1,5 +1,5 @@
 import * as clap from "./clap.ts";
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert";
 
 Deno.test("clap", async (t) => {
   await t.step("long", () => {
@@ -136,7 +136,7 @@ Deno.test("clap", async (t) => {
 
   await t.step("subcommand", () => {
     type Todo = {
-      add: {
+      add?: {
         title: string;
         priority?: string;
       };
@@ -165,17 +165,17 @@ Deno.test("clap", async (t) => {
 
     const args = clap.parse<Todo>(todo, ["add", "-p", "1", "buy milk"]);
 
-    assertEquals(args.add.title, "buy milk");
-    assertEquals(args.add.priority, "1");
+    assertEquals(args.add?.title, "buy milk");
+    assertEquals(args.add?.priority, "1");
   });
 
   await t.step("multiple subcommands", () => {
     type Todo = {
-      add: {
+      add?: {
         title: string;
         priority?: string;
       };
-      list: {
+      list?: {
         sort?: string;
         direction?: string;
         filterDone?: true;
@@ -226,8 +226,88 @@ Deno.test("clap", async (t) => {
       "-f",
     ]);
 
-    assertEquals(args.list.sort, "title");
-    assertEquals(args.list.direction, "asc");
-    assertEquals(args.list.filterDone, true);
+    assertEquals(args.list?.sort, "title");
+    assertEquals(args.list?.direction, "asc");
+    assertEquals(args.list?.filterDone, true);
+  });
+
+  await t.step("required argument", () => {
+    type List = {
+      target: string;
+    };
+
+    const ls = clap
+      .command("ls")
+      .arg(
+        clap
+          .argument("target")
+          .positional().required(),
+      );
+
+    assertThrows(
+      () => {
+        clap.parse<List>(ls, []);
+      },
+      Error,
+      "Argument 'target' is required",
+    );
+  });
+
+  await t.step("required argument", () => {
+    type Todo = {
+      add?: {
+        title: string;
+        priority?: string;
+      };
+      list?: {
+        sort?: string;
+        direction?: string;
+        filterDone?: true;
+      };
+    };
+
+    const todo = clap
+      .command("todo")
+      .requireSubcommand()
+      .subcommand(
+        clap
+          .command("add")
+          .description("add a new todo")
+          .arg(
+            clap
+              .argument("title")
+              .description("title of the todo")
+              .required()
+              .positional(),
+          )
+          .arg(
+            clap
+              .argument("priority")
+              .description("priority of the todo")
+              .short("p"),
+          ),
+      )
+      .subcommand(
+        clap
+          .command("list")
+          .description("list all todos")
+          .arg(clap.argument("sort").short("s").description("sort by field"))
+          .arg(clap.argument("direction").short("d").description("sort order"))
+          .arg(
+            clap
+              .argument("filterDone")
+              .short("f")
+              .description("filter done")
+              .flag(),
+          ),
+      );
+
+    assertThrows(
+      () => {
+        clap.parse<Todo>(todo, []);
+      },
+      Error,
+      "Command 'todo' requires subcommand",
+    );
   });
 });

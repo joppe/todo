@@ -1,4 +1,6 @@
-export type RawArgument = {
+import { EXPORT_PROPERTY } from "@clap/config.ts";
+
+export type ArgumentData = {
   name: string;
   description: string;
   short?: string;
@@ -16,6 +18,18 @@ export class Argument {
   protected _flag: boolean = false;
   protected _multiple: boolean = false;
   protected _positional: boolean = false;
+
+  get [EXPORT_PROPERTY](): ArgumentData {
+    return {
+      name: this._name,
+      description: this._description,
+      short: this._short,
+      required: this._required,
+      flag: this._flag,
+      multiple: this._multiple,
+      positional: this._positional,
+    };
+  }
 
   public constructor(name: string) {
     this._name = name;
@@ -55,18 +69,6 @@ export class Argument {
     this._positional = true;
 
     return this;
-  }
-
-  public raw(): RawArgument {
-    return {
-      name: this._name,
-      description: this._description,
-      short: this._short,
-      required: this._required,
-      flag: this._flag,
-      multiple: this._multiple,
-      positional: this._positional,
-    };
   }
 }
 

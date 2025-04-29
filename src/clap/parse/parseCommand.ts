@@ -1,74 +1,21 @@
-import type { RawArgument } from "./argument.ts";
-import type { Command, RawCommand } from "./command.ts";
+import type { CommandData } from "@clap/command.ts";
+import { findSubcommand } from "@clap/parse/findSubcommand.ts";
+import type { Input } from "@clap/input.ts";
+import { findArg } from "@clap/parse/findArg.ts";
 
-type InputArgType = "long" | "short" | "anonymous";
-type InputArg = {
-  value: string;
-  type: InputArgType;
-};
-
-type ResultValue = string | string[] | boolean;
-type Result = {
+export type ResultValue = string | string[] | boolean;
+export type Result = {
   [key: string]: ResultValue | Result;
 };
 
-function inputArgs(args: string[]): InputArg[] {
-  return args.reduce((acc: InputArg[], arg: string): InputArg[] => {
-    if (arg.startsWith("--")) {
-      acc.push({
-        value: arg.slice(2),
-        type: "long",
-      });
-    } else if (arg.startsWith("-")) {
-      arg
-        .slice(1)
-        .split("")
-        .forEach((value) => {
-          acc.push({
-            value,
-            type: "short",
-          });
-        });
-    } else {
-      acc.push({
-        value: arg,
-        type: "anonymous",
-      });
-    }
-    return acc;
-  }, []);
-}
-
-function findArg(
-  command: RawCommand,
-  inputArg: InputArg,
-): RawArgument | undefined {
-  return command.args.find((arg) => {
-    if (inputArg.type === "long") {
-      return arg.name === inputArg.value;
-    } else if (inputArg.type === "short") {
-      return arg.short === inputArg.value;
-    }
-
-    return false;
-  });
-}
-
-function findSubcommand(
-  command: RawCommand,
-  inputArg: InputArg,
-): RawCommand | undefined {
-  return command.commands.find((arg) => arg.name === inputArg.value);
-}
-
-function parseCommand(command: RawCommand, inputArgs: InputArg[]): Result {
+export function parseCommand(command: CommandData, inputArgs: Input[]): Result {
   const positionalArgs = command.args.filter((arg) => arg.positional);
   let positionalIndex = 0;
 
   const output: Result = {};
 
   for (let index = 0; index < inputArgs.length; index++) {
-    const inputArg = inputArgs[index] as InputArg;
+    const inputArg = inputArgs[index] as Input;
 
     if (inputArg.type === "anonymous") {
       const subcommand = findSubcommand(command, inputArg);
@@ -130,11 +77,4 @@ function parseCommand(command: RawCommand, inputArgs: InputArg[]): Result {
   }
 
   return output;
-}
-
-export function parse<T extends Result>(command: Command, args: string[]): T {
-  const raw = command.raw();
-  const output = parseCommand(raw, inputArgs(args));
-
-  return output as T;
 }
