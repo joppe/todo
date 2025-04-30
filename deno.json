@@ -1,8 +1,8 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-read=data/todos.json --allow-write=data/todos.json src/cli.ts",
-    "start": "deno run --allow-read=data/todos.json --allow-write=data/todos.json src/cli.ts",
-    "build": "deno compile --allow-read=/home/joppe/todo/todos.json --allow-write=/home/joppe/todo/todos.json --output=./bin/todo src/cli.ts"
+    "dev": "REPO_FILE=/home/joppe/work/todo/data/todos.json deno run --watch --allow-read=/home/joppe/work/todo/data/todos.json --allow-write=/home/joppe/work/todo/data/todos.json -E src/cli.ts",
+    "start": "REPO_FILE=/home/joppe/work/todo/data/todos.json deno run --allow-read=/home/joppe/work/todo/data/todos.json --allow-write=/home/joppe/work/todo/data/todos.json -E src/cli.ts",
+    "build": "REPO_FILE=/home/joppe/todo/todos.json deno compile --allow-read=/home/joppe/todo/todos.json --allow-write=/home/joppe/todo/todos.json --output=./bin/todo -E src/cli.ts"
   },
   "imports": {
     "@clap/": "./src/clap/",

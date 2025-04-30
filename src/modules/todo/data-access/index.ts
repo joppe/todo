@@ -3,8 +3,14 @@ import { makeFile } from "@gateways/file.ts";
 
 import { makeTodoJson } from "./todoJson.ts";
 
+const repo = Deno.env.get("REPO_FILE");
+
+if (!repo) {
+  throw new Error("REPO_FILE environment variable is not set");
+}
+
 const file = await makeFile({
-  file: "/home/joppe/todo/todos.json",
+  file: repo,
   createFile: true,
 });
 
