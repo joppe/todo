@@ -1,4 +1,9 @@
-import { Todo } from "../entity/Todo.ts";
+import type { SortableDirection, SortableField, Todo } from "../entity/Todo.ts";
+
+export type FindAllProps = {
+  sort: SortableField;
+  direction: SortableDirection;
+};
 
 export type TodoRepository = {
   insert: (data: Omit<Todo, "id">) => Promise<Todo>;
@@ -8,6 +13,8 @@ export type TodoRepository = {
   ) => Promise<Todo>;
   remove: (id: string) => Promise<void>;
   find: (id: string) => Promise<Todo>;
-  findAll: () => Promise<Todo[]>;
+  findAll: (
+    { sort, direction }: FindAllProps,
+  ) => Promise<Todo[]>;
   toggle: (id: string) => Promise<Todo>;
 };

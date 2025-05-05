@@ -1,6 +1,7 @@
-import type { File } from "../../../gateways/file.ts";
+import type { File } from "@gateways/file.ts";
+
 import type { Todo } from "../entity/Todo.ts";
-import type { TodoRepository } from "./TodoRepository.ts";
+import type { FindAllProps, TodoRepository } from "./TodoRepository.ts";
 
 export type MakeTodoJson = {
   file: File;
@@ -101,8 +102,21 @@ export function makeTodoJson({
     return todos[index] as Todo;
   }
 
-  async function findAll(): Promise<Todo[]> {
-    return await read();
+  async function findAll({ sort, direction }: FindAllProps): Promise<Todo[]> {
+    const todos = await read();
+
+    return todos.sort((a: Todo, b: Todo): number => {
+      const aField = a[sort] ?? "";
+      const bField = b[sort] ?? "";
+
+      if (aField < bField) {
+        return direction === "asc" ? -1 : 1;
+      }
+      if (aField > bField) {
+        return direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
   }
 
   async function toggle(id: string): Promise<Todo> {
