@@ -1,7 +1,7 @@
 import { uuid } from "@utils/uuid.ts";
 import { makeFile } from "@gateways/file.ts";
 
-import { makeTodoJson } from "./todoJson.ts";
+import { makeJsonTodoRepository } from "./jsonTodoRepository.ts";
 
 const repo = Deno.env.get("REPO_FILE");
 
@@ -14,7 +14,7 @@ const file = await makeFile({
   createFile: true,
 });
 
-export const todoRepository = makeTodoJson({
+export const todoRepository = makeJsonTodoRepository({
   file,
   generateId: uuid,
 });

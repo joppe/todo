@@ -3,7 +3,7 @@ import type { File } from "@gateways/file.ts";
 import type { Todo } from "../entity/Todo.ts";
 import type { FindAllProps, TodoRepository } from "./TodoRepository.ts";
 
-export type MakeTodoJson = {
+export type MakeJsonTodoRepository = {
   file: File;
   generateId: () => string;
 };
@@ -14,10 +14,10 @@ export type SerializedTodo = Omit<Todo, "created" | "updated" | "deadline"> & {
   deadline: string | null;
 };
 
-export function makeTodoJson({
+export function makeJsonTodoRepository({
   file,
   generateId,
-}: MakeTodoJson): TodoRepository {
+}: MakeJsonTodoRepository): TodoRepository {
   async function read(): Promise<Todo[]> {
     const data = await file.read();
     const json = JSON.parse(data);
