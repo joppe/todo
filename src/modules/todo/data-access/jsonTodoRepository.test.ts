@@ -1,6 +1,7 @@
 import { beforeEach, describe, it } from "jsr:@std/testing/bdd";
 import { assertEquals } from "jsr:@std/assert";
 import { assertSpyCalls, spy } from "jsr:@std/testing/mock";
+import { assertRejects } from "@std/assert/rejects";
 
 import { File } from "@gateways/file.ts";
 
@@ -50,6 +51,59 @@ describe("jsonTodoRepository", () => {
     });
   });
 
+  describe("update", () => {
+    it("returns the updated todo", async () => {
+      const { id: _id, ...data } = fakeTodo();
+      const todo = await repository.insert(data);
+
+      const updatedTodo = await repository.update(todo.id, {
+        title: "updated",
+        description: "updated",
+        deadline: new Date(),
+      });
+
+      assertEquals(updatedTodo.title, "updated");
+    });
+  });
+
+  describe("remove", () => {
+    it("removes the todo", async () => {
+      const { id: _id, ...data } = fakeTodo();
+      const todo = await repository.insert(data);
+
+      await repository.remove(todo.id);
+
+      assertRejects(
+        async () => {
+          await repository.find(todo.id);
+        },
+        Error,
+        "Todo not found",
+      );
+    });
+  });
+
+  describe("find", () => {
+    it("returns the todo", async () => {
+      const { id: _id, ...data } = fakeTodo();
+      const todo = await repository.insert(data);
+
+      const foundTodo = await repository.find(todo.id);
+
+      assertEquals(foundTodo.title, data.title);
+    });
+
+    it("throws an error if the todo is not found", () => {
+      assertRejects(
+        async () => {
+          await repository.find(fakeId());
+        },
+        Error,
+        "Todo not found",
+      );
+    });
+  });
+
   describe("findAll", () => {
     it("returns all todos sorted by title ascending", async () => {
       await repository.insert(fakeTodo({ title: "e" }));
@@ -69,6 +123,17 @@ describe("jsonTodoRepository", () => {
       assertEquals(result[2].title, "c");
       assertEquals(result[3].title, "d");
       assertEquals(result[4].title, "e");
+    });
+  });
+
+  describe("toggle", () => {
+    it("toggles the todo", async () => {
+      const { id: _id, ...data } = fakeTodo();
+      const todo = await repository.insert(data);
+
+      const toggledTodo = await repository.toggle(todo.id);
+
+      assertEquals(toggledTodo.done, !todo.done);
     });
   });
 });
