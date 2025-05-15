@@ -1,6 +1,6 @@
-import type { CommandData } from "@clap/command.ts";
-import type { Input } from "@clap/input.ts";
-import type { ArgumentData } from "@clap/argument.ts";
+import type { CommandData } from "../command.ts";
+import type { Input } from "../input.ts";
+import type { ArgumentData } from "../argument.ts";
 
 export function findArg(
   command: CommandData,

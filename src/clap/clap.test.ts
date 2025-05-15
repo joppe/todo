@@ -1,5 +1,6 @@
-import * as clap from "./clap.ts";
 import { assertEquals, assertThrows } from "jsr:@std/assert";
+
+import * as clap from "./clap.ts";
 
 Deno.test("clap", async (t) => {
   await t.step("long", () => {

@@ -1,7 +1,7 @@
-import type { CommandData } from "@clap/command.ts";
-import { findSubcommand } from "@clap/parse/findSubcommand.ts";
-import type { Input } from "@clap/input.ts";
-import { findArg } from "@clap/parse/findArg.ts";
+import type { CommandData } from "../command.ts";
+import type { Input } from "../input.ts";
+import { findSubcommand } from "./findSubcommand.ts";
+import { findArg } from "./findArg.ts";
 
 export type ResultValue = string | string[] | boolean;
 export type Result = {

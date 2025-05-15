@@ -1,5 +1,5 @@
 import type { Argument, ArgumentData } from "./argument.ts";
-import { EXPORT_PROPERTY } from "@clap/config.ts";
+import { EXPORT_PROPERTY } from "./config.ts";
 
 export type CommandData = {
   name: string;

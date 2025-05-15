@@ -1,4 +1,4 @@
-import { EXPORT_PROPERTY } from "@clap/config.ts";
+import { EXPORT_PROPERTY } from "./config.ts";
 
 export type ArgumentData = {
   name: string;
