@@ -1,7 +1,7 @@
 import type { File } from "@gateways/file.ts";
 
-import type { Todo } from "../entity/Todo.ts";
-import type { FindAllProps, TodoRepository } from "./TodoRepository.ts";
+import type { SortableDirection, SortableField, Todo } from "../entity/Todo.ts";
+import type { TodoRepository } from "./TodoRepository.ts";
 
 export type MakeJsonTodoRepository = {
   file: File;
@@ -46,13 +46,33 @@ export function makeJsonTodoRepository({
     await file.write(data);
   }
 
-  function findIndex(id: string, todos: Todo[]): number {
+  function findIndex(id: string, todos: Todo[]): number | null {
     const index = todos.findIndex((todo) => todo.id === id);
 
     if (index === -1) {
-      throw new Error("Todo not found");
+      return null;
     }
+
     return index;
+  }
+
+  function sort(
+    todos: Todo[],
+    sortBy: SortableField,
+    direction: SortableDirection,
+  ): Todo[] {
+    return todos.toSorted((a: Todo, b: Todo): number => {
+      const aField = a[sortBy] ?? "";
+      const bField = b[sortBy] ?? "";
+
+      if (aField < bField) {
+        return direction === "asc" ? -1 : 1;
+      }
+      if (aField > bField) {
+        return direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
   }
 
   async function insert(data: Omit<Todo, "id">): Promise<Todo> {
@@ -75,6 +95,10 @@ export function makeJsonTodoRepository({
     const todos = await read();
     const index = findIndex(id, todos);
 
+    if (index === null) {
+      throw new Error("Todo not found");
+    }
+
     const todo = {
       ...todos[index],
       ...data,
@@ -91,37 +115,45 @@ export function makeJsonTodoRepository({
     const todos = await read();
     const index = findIndex(id, todos);
 
+    if (index === null) {
+      throw new Error("Todo not found");
+    }
+
     todos.splice(index, 1);
     await write(todos);
   }
 
-  async function find(id: string): Promise<Todo> {
+  async function find(id: string): Promise<Todo | null> {
     const todos = await read();
     const index = findIndex(id, todos);
+
+    if (index === null) {
+      return null;
+    }
 
     return todos[index] as Todo;
   }
 
-  async function findAll({ sort, direction }: FindAllProps): Promise<Todo[]> {
+  async function findAll(
+    sortBy?: SortableField,
+    direction?: SortableDirection,
+  ): Promise<Todo[]> {
     const todos = await read();
 
-    return todos.sort((a: Todo, b: Todo): number => {
-      const aField = a[sort] ?? "";
-      const bField = b[sort] ?? "";
+    if (sortBy === undefined) {
+      return todos;
+    }
 
-      if (aField < bField) {
-        return direction === "asc" ? -1 : 1;
-      }
-      if (aField > bField) {
-        return direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
+    return sort(todos, sortBy, direction ?? "asc");
   }
 
   async function toggle(id: string): Promise<Todo> {
     const todos = await read();
     const index = findIndex(id, todos);
+
+    if (index === null) {
+      throw new Error("Todo not found");
+    }
 
     const todo = {
       ...todos[index],

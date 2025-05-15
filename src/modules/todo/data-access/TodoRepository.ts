@@ -1,10 +1,5 @@
 import type { SortableDirection, SortableField, Todo } from "../entity/Todo.ts";
 
-export type FindAllProps = {
-  sort: SortableField;
-  direction: SortableDirection;
-};
-
 export type TodoRepository = {
   insert: (data: Omit<Todo, "id">) => Promise<Todo>;
   update: (
@@ -12,9 +7,10 @@ export type TodoRepository = {
     data: Pick<Todo, "title" | "description" | "deadline">,
   ) => Promise<Todo>;
   remove: (id: string) => Promise<void>;
-  find: (id: string) => Promise<Todo>;
+  find: (id: string) => Promise<Todo | null>;
   findAll: (
-    { sort, direction }: FindAllProps,
+    sortBy?: SortableField,
+    direction?: SortableDirection,
   ) => Promise<Todo[]>;
   toggle: (id: string) => Promise<Todo>;
 };

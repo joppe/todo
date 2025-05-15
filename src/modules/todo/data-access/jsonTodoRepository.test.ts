@@ -73,9 +73,15 @@ describe("jsonTodoRepository", () => {
 
       await repository.remove(todo.id);
 
+      const result = await repository.find(todo.id);
+
+      assertEquals(result, null);
+    });
+
+    it("throws when todo not found", () => {
       assertRejects(
         async () => {
-          await repository.find(todo.id);
+          await repository.remove(fakeId());
         },
         Error,
         "Todo not found",
@@ -90,32 +96,25 @@ describe("jsonTodoRepository", () => {
 
       const foundTodo = await repository.find(todo.id);
 
-      assertEquals(foundTodo.title, data.title);
+      assertEquals(foundTodo?.title, data.title);
     });
 
-    it("throws an error if the todo is not found", () => {
-      assertRejects(
-        async () => {
-          await repository.find(fakeId());
-        },
-        Error,
-        "Todo not found",
-      );
+    it("return null if the todo is not found", async () => {
+      const result = await repository.find(fakeId());
+
+      assertEquals(result, null);
     });
   });
 
   describe("findAll", () => {
-    it("returns all todos sorted by title ascending", async () => {
+    it("sorted", async () => {
       await repository.insert(fakeTodo({ title: "e" }));
       await repository.insert(fakeTodo({ title: "d" }));
       await repository.insert(fakeTodo({ title: "c" }));
       await repository.insert(fakeTodo({ title: "b" }));
       await repository.insert(fakeTodo({ title: "a" }));
 
-      const result = await repository.findAll({
-        sort: "title",
-        direction: "asc",
-      });
+      const result = await repository.findAll("title", "asc");
 
       assertEquals(result.length, 5);
       assertEquals(result[0].title, "a");
