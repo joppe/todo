@@ -1,5 +1,5 @@
-import type { CommandData } from "@clap/command.ts";
-import type { Input } from "@clap/input.ts";
+import type { CommandData } from "../command.ts";
+import type { Input } from "../input.ts";
 
 export function findSubcommand(
   command: CommandData,

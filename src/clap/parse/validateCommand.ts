@@ -1,5 +1,5 @@
-import type { CommandData } from "@clap/command.ts";
-import type { Result } from "@clap/parse/parseCommand.ts";
+import type { CommandData } from "../command.ts";
+import type { Result } from "./parseCommand.ts";
 
 export function validateCommand(command: CommandData, result: Result): void {
   command.args.map((arg) => {

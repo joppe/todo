@@ -1,5 +1,5 @@
-import { argument } from "@clap/argument.ts";
-import { command } from "@clap/command.ts";
-import { parse } from "@clap/parse/parse.ts";
+import { argument } from "./argument.ts";
+import { command } from "./command.ts";
+import { parse } from "./parse/parse.ts";
 
 export { argument, command, parse };

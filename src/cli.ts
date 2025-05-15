@@ -51,7 +51,10 @@ if (args.add) {
 
   await createTodo({ title, description, deadline });
 } else if (args.list) {
-  const list = await listTodos();
+  const list = await listTodos({
+    sort: args.list.sort,
+    direction: args.list.direction,
+  });
 
   console.table(list, ["id", "title", "description", "done", "deadline"]);
 }

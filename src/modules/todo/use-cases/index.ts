@@ -8,6 +8,7 @@ import { makeDeleteTodo } from "./deleteTodo.ts";
 import { makeListTodos } from "./listTodos.ts";
 import { makeToggleTodo } from "./toggleTodo.ts";
 import { makeUpdateTodo } from "./updateTodo.ts";
+import { SORTABLE_DIRECTIONS, SORTABLE_FIELDS } from "../entity/Todo.ts";
 
 export const createTodo = makeCreateTodo({
   todoRepository: todoRepository,
@@ -21,6 +22,8 @@ export const deleteTodo = makeDeleteTodo({
 
 export const listTodos = makeListTodos({
   todoRepository: todoRepository,
+  sortableFields: SORTABLE_FIELDS,
+  sortableDirections: SORTABLE_DIRECTIONS,
 });
 
 export const toggleTodo = makeToggleTodo({
