@@ -1,5 +1,6 @@
 import * as clap from "@clap/clap.ts";
-import { createTodo, listTodos } from "./modules/todo/use-cases/index.ts";
+import { createTodo } from "./modules/todo/use-cases/index.ts";
+import { cliListTodoController } from "@todo/controllers/index.ts";
 
 type Todo = {
   add?: {
@@ -51,9 +52,10 @@ if (args.add) {
 
   await createTodo({ title, description, deadline });
 } else if (args.list) {
-  const list = await listTodos({
-    sort: args.list.sort,
+  const list = await cliListTodoController({
+    sortBy: args.list.sort,
     direction: args.list.direction,
+    fields: ["id", "title", "description", "done", "deadline"],
   });
 
   console.table(list, ["id", "title", "description", "done", "deadline"]);

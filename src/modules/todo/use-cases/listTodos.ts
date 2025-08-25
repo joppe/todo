@@ -8,8 +8,8 @@ export type MakeListTodosProps = {
 };
 
 export type ListTodosProps = {
-  sort?: SortableField;
-  direction?: SortableDirection;
+  sortBy?: string;
+  direction?: string;
 };
 export type ListTodos = (props: ListTodosProps) => Promise<Todo[]>;
 
@@ -19,24 +19,21 @@ export function makeListTodos({
   sortableDirections,
 }: MakeListTodosProps): ListTodos {
   return async function listTodos(
-    { sort, direction },
+    { sortBy, direction },
   ): Promise<Todo[]> {
-    if (sort && !sortableFields.includes(sort)) {
+    if (sortBy && !(sortableFields as string[]).includes(sortBy)) {
       throw new Error("Invalid sort field");
     }
 
-    if (direction && !sortableDirections.includes(direction)) {
+    if (direction && !(sortableDirections as string[]).includes(direction)) {
       throw new Error("Invalid sort direction");
     }
 
-    const sortField = sort ?? "created";
-    const sortDirection = direction ?? "asc";
+    const sortByField = (sortBy ?? "created") as SortableField;
+    const sortDirection = (direction ?? "asc") as SortableDirection;
 
     try {
-      const todos = await todoRepository.findAll({
-        sort: sortField,
-        direction: sortDirection,
-      });
+      const todos = await todoRepository.findAll(sortByField, sortDirection);
 
       return todos;
     } catch (_) {
