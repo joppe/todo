@@ -1,6 +1,7 @@
 import * as clap from "@clap/clap.ts";
-import { createTodo } from "./modules/todo/use-cases/index.ts";
-import { cliListTodoController } from "@todo/controllers/index.ts";
+
+import { createTodo } from "@todo/use-cases/index.ts";
+import { listTodoController } from "@todo/controllers/index.ts";
 
 type Todo = {
   add?: {
@@ -14,35 +15,29 @@ type Todo = {
   };
 };
 
-const todo = clap.command("todo").description("Commands for managing todos")
+const todo = clap
+  .command("todo")
+  .description("Commands for managing todos")
   .subcommand(
-    clap.command("add").arg(
-      clap
-        .argument("title")
-        .description("The title of the todo")
-        .required(),
-    )
+    clap
+      .command("add")
       .arg(
-        clap
-          .argument("description")
-          .description("The description of the todo"),
+        clap.argument("title").description("The title of the todo").required(),
       )
       .arg(
-        clap
-          .argument("deadline")
-          .description("The deadline of the todo"),
-      ),
+        clap.argument("description").description("The description of the todo"),
+      )
+      .arg(clap.argument("deadline").description("The deadline of the todo")),
   )
   .subcommand(
-    clap.command("list").arg(
-      clap
-        .argument("sort")
-        .description("Sort the list of todos"),
-    ).arg(
-      clap
-        .argument("direction")
-        .description("The direction to sort the list of todos"),
-    ),
+    clap
+      .command("list")
+      .arg(clap.argument("sort").description("Sort the list of todos"))
+      .arg(
+        clap
+          .argument("direction")
+          .description("The direction to sort the list of todos"),
+      ),
   );
 
 const args = clap.parse<Todo>(todo, Deno.args);
@@ -52,10 +47,10 @@ if (args.add) {
 
   await createTodo({ title, description, deadline });
 } else if (args.list) {
-  const list = await cliListTodoController({
+  const list = await listTodoController({
     sortBy: args.list.sort,
     direction: args.list.direction,
-    fields: ["id", "title", "description", "done", "deadline"],
+    fields: ["id", "title", "done", "deadline"],
   });
 
   console.table(list, ["id", "title", "description", "done", "deadline"]);

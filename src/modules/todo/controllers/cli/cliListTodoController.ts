@@ -1,5 +1,5 @@
-import { ListTodoPresenter } from "../presenter/ListTodoPresenter.ts";
-import { ListTodos, ListTodosProps } from "../use-cases/listTodos.ts";
+import { ListTodoPresenter } from "../../presenter/ListTodoPresenter.ts";
+import { ListTodos, ListTodosProps } from "../../use-cases/listTodos.ts";
 
 export type CliListTodoControllerProps = ListTodosProps & {
   fields?: string[];
@@ -14,12 +14,15 @@ export type MakeCliListTodoControllerProps = {
   listTodos: ListTodos;
 };
 
-export function makeCliListTodoController(
-  { presenter, listTodos }: MakeCliListTodoControllerProps,
-): CliListTodoController {
-  return async function cliListTodoController(
-    { sortBy, direction, fields = ["id", "title"] },
-  ) {
+export function makeCliListTodoController({
+  presenter,
+  listTodos,
+}: MakeCliListTodoControllerProps): CliListTodoController {
+  return async function cliListTodoController({
+    sortBy,
+    direction,
+    fields = ["id", "title"],
+  }) {
     const todos = await listTodos({ sortBy, direction });
 
     return presenter(todos, fields);
