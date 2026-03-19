@@ -1,3 +1,0 @@
-#!/bin/bash
-
-NVIM_FORMAT=deno nvim .
